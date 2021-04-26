@@ -1,6 +1,8 @@
 import tester_dictionaries as td
 
-#takes a string and returns the value of the first unit in it
+#takes a string and returns the value-compared-to-lowest-unit of the first unit found
+#takes a string and a dictionary as paramaters. Choosing a given dictionary dictates
+#whether this function is used for transfer or bandwidth
 #TODO: simplify these four functions to eliminate repititions 
 def unitSize(output_line, dictionary):
 
@@ -8,6 +10,7 @@ def unitSize(output_line, dictionary):
         if unit in output_line:
             return dictionary[unit]
 
+#formats numeric parameter into string with relevant units for output 
 def transferFormat(transfer_num):
 
     numLen = int(len(str(int(transfer_num))))
@@ -20,6 +23,7 @@ def transferFormat(transfer_num):
 
     return newNum + td.transferLenToUnit[numLen]
 
+#formats numeric parameter into string with relevant units for output
 def bandwidthFormat(bandwidth_num):
 
     numLen = int(len(str(int(bandwidth_num))))
@@ -32,6 +36,7 @@ def bandwidthFormat(bandwidth_num):
 
     return newNum + td.bandwidthLenToUnit[numLen]
 
+#merge function used for mergeSort
 #TODO: use numpy instead of below function
 def merge(arr, l, m, r):
     n1 = m - l + 1
@@ -62,6 +67,7 @@ def merge(arr, l, m, r):
         j += 1
         k += 1
 
+#simple recursive merge sort function
 def mergeSort(arr,l,r):
     if l < r:
         m = (l+(r-1))//2

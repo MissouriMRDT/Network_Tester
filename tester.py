@@ -1,19 +1,35 @@
-#throughput tester
-#aggregates information about current network connection into an insightful summary using iperf3
-
 import time
-import csv
 import re
 import tester_dictionaries as td
 import tester_functions as tf
-    
-def main() -> None:
+import tester_csvhandler as csvh
 
+class csv_data:
+    client_IP = ''
+    client_port = ''
+    server_IP = ''
+    server_port = ''
+
+    transfer_total = ''
+    transfer_max = ''
+    transfer_min = ''
+
+    bandwidth_avg = ''
+    bandwidth_max = ''
+    bandwidth_min = ''
+
+    date = ''
+    time_start = ''
+    time_end = ''
+    time_elapsed = ''
+    signal_dropped = ''
+
+def main() -> None:
     end_data = False
     t_start = time.localtime() #timestamp of program start
     lines = [] #gets filled with each line of iperf output
-    
     connection_established = False
+    data = csv_data()
 
     #loop continues while data is being output by iperf, terminates when iperf output stops
     while True:
@@ -22,16 +38,13 @@ def main() -> None:
         if not connection_established and program_input.split(' ')[0] == '[':
             connection_established = True
             print('connected, writing to file...')
-
         else:
             print(program_input)
 
         #empty line signals stop
         if program_input.strip() == '':
-
             if not end_data:
-                end_data = True
-                
+                end_data = True  
             else: 
                 break
 
@@ -39,18 +52,10 @@ def main() -> None:
 
     print('connection terminated')
     t_end = time.localtime()
-
-    #TODO: find a way to input frequency
-
     interval = []
     transfer = []
     bandwidth = []
-
-    signal_dropped = False
-
-    #all variables used in for loop are declared empty to allow data to be written to csv file
-    #if an if statement in does not get triggered
-    client_IP = server_IP = client_port = server_port = transfer_total = bandwidth_avg = ''
+    data.signal_dropped = False
 
     intervalRegex = re.compile(r'([0-9.]+-[0-9.]+)', re.VERBOSE)
     IPRegex = re.compile(r'\d\d\d\.\d\d\d\.\d\.[0-9]+', re.VERBOSE)
@@ -58,21 +63,20 @@ def main() -> None:
 
     #Uses regex to organize iperf raw output to variables
     for i in lines:
-
         #signifies header
         if 'local' in i:
-            client_IP, server_IP = IPRegex.findall(i)
-            client_port = dataRegex.findall(i)[4]
-            server_port = dataRegex.findall(i)[-1]
+            data.client_IP, data.server_IP = IPRegex.findall(i)
+            data.client_port = dataRegex.findall(i)[4]
+            data.server_port = dataRegex.findall(i)[-1]
 
         #signifies end information
         elif 'sender' in i:
-            transfer_total = float(dataRegex.findall(i)[-2]) * tf.unitSize(i, td.transferUnits)
-            bandwidth_avg = float(dataRegex.findall(i)[-1]) * tf.unitSize(i, td.bandwidthUnits)
+            data.transfer_total = float(dataRegex.findall(i)[-2]) * tf.unitSize(i, td.transferUnits)
+            data.bandwidth_avg = float(dataRegex.findall(i)[-1]) * tf.unitSize(i, td.bandwidthUnits)
         
         elif 'receiver' in i:
-            if float(dataRegex.findall(i)[-2]) * tf.unitSize(i, td.transferUnits) != transfer_total or float(dataRegex.findall(i)[-1]) * tf.unitSize(i, td.bandwidthUnits) != bandwidth_avg:
-                signal_dropped = True
+            if float(dataRegex.findall(i)[-2]) * tf.unitSize(i, td.transferUnits) != data.transfer_total or float(dataRegex.findall(i)[-1]) * tf.unitSize(i, td.bandwidthUnits) != data.bandwidth_avg:
+                data.signal_dropped = True
 
         #signifies data
         elif 'sec' in i:
@@ -86,97 +90,23 @@ def main() -> None:
     bandwidth_sort = bandwidth
     tf.mergeSort(bandwidth_sort, 0, len(bandwidth)-1)
 
-    #csv header
-    fieldnames = ['Trial', 'Title', 'Data']
-
-    #csv data
-    #TODO: Figure out how to add sequential trial numbers
-    #TODO: Format
     if connection_established:
-        rows = [
-            {'Trial': ''},
+        data.transfer_total = tf.transferFormat(data.transfer_total)
+        data.transfer_max = tf.transferFormat(transfer_sort[len(transfer_sort)-1])
+        data.transfer_min = tf.transferFormat(transfer_sort[0])
 
-            {'Trial': '1',
-            'Title': 'Client IP',
-            'Data': client_IP},
+        data.bandwidth_avg = tf.bandwidthFormat(data.bandwidth_avg)
+        data.bandwidth_max = tf.bandwidthFormat(bandwidth_sort[-2])
+        data.bandwidth_min = tf.bandwidthFormat(bandwidth_sort[0])
 
-            {'Title': 'Client Port No.',
-            'Data': client_port},
+        data.date = time.strftime("%m-%d-%y", t_start)
+        data.time_start = time.strftime("%H:%M:%S", t_start)
+        data.time_end = time.strftime("%H:%M:%S", t_end)
+        data.time_elapsed = interval[-1].split('-')[1] #TODO: use data from time module to determine elapsed time
 
-            {'Title': 'Server IP',
-            'Data': server_IP},
-
-            {'Title': 'Server Port No.',
-            'Data': server_port},
-
-            #{'Title': 'Frequency',
-            #'Data': ''},
-
-            #{'Title': 'Protocol',
-            #'Data': ''},
-
-            #{'Title': 'Buffer Length',
-            #'Data': ''},
-
-            {'Title': 'Total transfer size',
-            'Data': tf.transferFormat(transfer_total)},
-
-            {'Title': 'Max transfer size',
-            'Data': tf.transferFormat(transfer_sort[len(transfer_sort)-1])},
-
-            {'Title': 'Min transfer size',
-            'Data': tf.transferFormat(transfer_sort[0])},
-
-            {'Title': 'Avg Bandwidth',
-            'Data': tf.bandwidthFormat(bandwidth_avg)},
-
-            {'Title': 'Max Bandwidth',
-            'Data': tf.bandwidthFormat(bandwidth_sort[-2])},
-
-            {'Title': 'Min Bandwidth',
-            'Data': tf.bandwidthFormat(bandwidth_sort[0])},
-
-            {'Title': 'Date',
-            'Data': time.strftime("%m-%d-%y", t_start)},
-
-            {'Title': 'Start Time',
-            'Data': time.strftime("%H:%M:%S", t_start)},
-
-            {'Title': 'End Time',
-            'Data': time.strftime("%H:%M:%S", t_end)},
-
-            {'Title': 'Time Elapsed',
-            'Data': interval[-1].split('-')[1]}, #TODO: use data from time module to determine elapsed time
-
-            {'Title': 'Signal Dropped',
-            'Data': signal_dropped},
-
-            #{'Title': 'Interruptions',
-            #'Data': ''},
-
-            #{'Title': 'Raw data',
-            #'Data': ''}
-        ]
-
-    '''
-    Buffer Length: Duration (in seconds) between pings
-    Avg Bandwidth: add whether this number is above or below avg
-    Interruptions: periods with low bandwidth, add timestamps using interval[]
-    Raw data:      play around with formatting
-
-    TODO: System info of server and client
-    TODO: Graph
-    '''
-
-
-    #writing to csv file
-    with open('ThroughputTest_%s.csv' % time.strftime('%m-%d-%y_%H-%M-%S', t_start), 'w', encoding='UTF8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    if connection_established:
-        print('Data written to file %s.' % f.name)
+        csv_filename = 'ThroughputTest_%s.csv' % time.strftime('%m-%d-%y_%H-%M-%S', t_start)
+        csvh.csv_handler(data, csv_filename)
+        print('Data written to file %s.' % csv_filename)
     else:
         print('No connection; data not written.')
 

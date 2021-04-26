@@ -1,3 +1,4 @@
+#transfer unit size to its size relative to a byte
 transferUnits = {
     "KBytes" : 1000,
     "MBytes" : 1000000,
@@ -6,6 +7,7 @@ transferUnits = {
     "Bytes" : 1
 }
 
+#bandwidth unit size to its size relative to a bit
 bandwidthUnits = {
     "Kbits" : 1000,
     "Mbits" : 1000000,
@@ -14,6 +16,7 @@ bandwidthUnits = {
     "bits" : 1,
 }
 
+#pairs number of digits in a transfer value to its relevant unit
 transferLenToUnit = {
     1 : " bits/sec",
     2 : " bits/sec",
@@ -32,6 +35,7 @@ transferLenToUnit = {
     15 : " Tbits/sec"
 }
 
+#pairs number of digits in a bandwidth value to its relevant unit
 bandwidthLenToUnit = {
     1 : " Bytes",
     2 : " Bytes",
