@@ -4,6 +4,8 @@ import tester_dictionaries as td
 import tester_functions as tf
 import tester_csvhandler as csvh
 
+#TODO: add python script to automate iperf run in command line
+
 class csv_data:
     client_IP = ''
     client_port = ''
@@ -107,6 +109,7 @@ def main() -> None:
         csv_filename = 'ThroughputTest_%s.csv' % time.strftime('%m-%d-%y_%H-%M-%S', t_start)
         csvh.csv_handler(data, csv_filename)
         print('Data written to file %s.' % csv_filename)
+
     else:
         print('No connection; data not written.')
 

@@ -3,7 +3,6 @@ import tester_dictionaries as td
 #takes a string and returns the value-compared-to-lowest-unit of the first unit found
 #takes a string and a dictionary as paramaters. Choosing a given dictionary dictates
 #whether this function is used for transfer or bandwidth
-#TODO: simplify these four functions to eliminate repititions 
 def unitSize(output_line, dictionary):
 
     for unit in dictionary:

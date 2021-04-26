@@ -1,12 +1,8 @@
 import csv
 
 def csv_handler(data, filename):
-    #csv header
     fieldnames = ['Trial', 'Title', 'Data']
 
-    #csv data
-    #TODO: Figure out how to add sequential trial numbers
-    #TODO: Format
     rows = [
         {'Trial': ''},
 
@@ -22,15 +18,6 @@ def csv_handler(data, filename):
 
         {'Title': 'Server Port No.',
         'Data': data.server_port},
-
-        #{'Title': 'Frequency',
-        #'Data': ''},
-
-        #{'Title': 'Protocol',
-        #'Data': ''},
-
-        #{'Title': 'Buffer Length',
-        #'Data': ''},
 
         {'Title': 'Total transfer size',
         'Data': data.transfer_total},
@@ -64,25 +51,23 @@ def csv_handler(data, filename):
 
         {'Title': 'Signal Dropped',
         'Data': data.signal_dropped},
-
-        #{'Title': 'Interruptions',
-        #'Data': ''},
-
-        #{'Title': 'Raw data',
-        #'Data': ''}
     ]
 
     '''
+    TODO:
     Buffer Length: Duration (in seconds) between pings
     Avg Bandwidth: add whether this number is above or below avg
     Interruptions: periods with low bandwidth, add timestamps using interval[]
     Raw data:      play around with formatting
 
+    TODO: Figure out how to add sequential trial numbers
     TODO: System info of server and client
+    TODO: Format CSV better
     TODO: Graph
     '''
 
     #writing to csv file
+    #TODO: when creating csv files, save to specified folder and tell user where file is saved
     with open(filename, 'w', encoding='UTF8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
